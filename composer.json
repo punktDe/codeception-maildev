@@ -1,0 +1,15 @@
+{
+    "description": "Provides a module and gherkin steps to access a maildev api for codeception testing",
+    "name": "punktde/codeception-maildev",
+    "license": "GPL-3.0-or-later",
+    "require": {
+        "codeception/codeception": "^4.0",
+        "codeception/module-webdriver": "^1.0",
+        "neos/utility-arrays": "*"
+    },
+    "autoload": {
+        "psr-4": {
+            "PunktDe\\Codeception\\MailDev\\": "Classes/"
+      }
+    }
+}
