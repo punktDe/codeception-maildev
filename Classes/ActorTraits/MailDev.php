@@ -39,7 +39,7 @@ trait MailDev
     }
 
     /**
-     * @when I open the first mail
+     * @When I open the first mail
      */
     public function iOpenTheFirstMail(): void
     {
@@ -47,7 +47,7 @@ trait MailDev
     }
 
     /**
-     * @when I open the second mail
+     * @When I open the second mail
      */
     public function iOpenTheSecondMail(): void
     {

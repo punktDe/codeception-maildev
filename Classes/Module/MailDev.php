@@ -38,12 +38,12 @@ class MailDev extends Module
      */
     public function inboxContainsNumberOfMails(int $numberOfMails): void
     {
-        $this->assertEquals($numberOfMails, $this->mailHogClient->countAll());
+        $this->assertEquals($numberOfMails, $this->mailDevClient->countAll());
     }
 
     public function clearInbox(): void
     {
-        $this->mailHogClient->deleteAllMessages();
+        $this->mailDevClient->deleteAllMails();
     }
 
     /**
@@ -52,7 +52,7 @@ class MailDev extends Module
     public function openMailByNumber(int $mailNumber): void
     {
         $mailIndex = $mailNumber - 1;
-        $this->currentMail = $this->mailHogClient->findOneByIndex($mailIndex);
+        $this->currentMail = $this->mailDevClient->findOneByIndex($mailIndex);
 
         $this->assertInstanceOf(Mail::class, $this->currentMail, 'The mail with number ' . $mailNumber . ' does not exist.');
     }
