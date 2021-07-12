@@ -1,6 +1,6 @@
 # punktde/codeception-maildev
 
-## Gherkin Steps and module functions to test using Mailhog
+## Gherkin Steps and module functions to test using MailDev
 
 ### How to use
 
