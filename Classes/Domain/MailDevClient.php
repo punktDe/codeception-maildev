@@ -19,15 +19,21 @@ class MailDevClient
      */
     protected $client;
 
-    public function __construct(string $baseUri = 'http://127.0.0.1:8025')
+    public function __construct(string $baseUri, string $username = '', string $password = '', string $authenticationType = 'basic')
     {
-        $this->client = new Client([
+        $configuration = [
             'base_uri' => $baseUri,
             'cookies' => true,
             'headers' => [
                 'User-Agent' => 'FancyPunktDeGuzzleTestingAgent'
-            ]
-        ]);
+            ],
+        ];
+
+        if($username !== '' && $password !== '') {
+            $configuration = array_merge($configuration, ['auth' => [$username, $password, $authenticationType]]);
+        }
+
+        $this->client = new Client($configuration);
     }
 
     public function deleteAllMails(): void
