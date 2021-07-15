@@ -32,6 +32,18 @@ modules:
         base_uri: http://maildev.project
 ```
 
+You can add authentication parameters to authenticate with the guzzle client when necessary. For futher details see https://docs.guzzlephp.org/en/latest/request-options.html#auth
+
+```yaml
+modules:
+   enabled:
+      - PunktDe\Codeception\MailDev\Module\MailDev:
+        base_uri: http://maildev.project
+        username: 'user'
+        password: 'secret'
+        atheticationType: 'basic'
+```
+
 #### Gherkin steps
 
 Just add the trait `PunktDe\Codeception\MailDev\ActorTraits\MailDev` to your testing actor. Then you can use `*.feature` files to write your gherkin tests with the new steps.
