@@ -13,9 +13,9 @@ trait MailDev
 {
     /**
      * @Then /^the inbox contains (\d+) mails?$/
-     * @param int $numberOfMails
+     * @param int|string $numberOfMails
      */
-    public function theInboxContainsMails(int $numberOfMails): void
+    public function theInboxContainsMails(int|string $numberOfMails): void
     {
         $this->inboxContainsNumberOfMails((int)$numberOfMails);
     }
