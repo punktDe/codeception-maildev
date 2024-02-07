@@ -41,7 +41,7 @@ modules:
         base_uri: http://maildev.project
         username: 'user'
         password: 'secret'
-        atheticationType: 'basic'
+        authenticationType: 'basic'
 ```
 
 #### Gherkin steps
