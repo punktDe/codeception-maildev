@@ -100,10 +100,18 @@ class MailDev extends Module
     public function checkRecipientAddress(string $address): void
     {
         $recipients = $this->currentMail->getRecipients();
-        foreach ($recipients as $recipient) {
-            if ($recipient === $address) {
+        if (is_string($recipients)) {
+            if ($recipients === $address) {
                 return;
             }
+        } elseif (is_array($recipients)) {
+            foreach ($recipients as $recipient) {
+                if ($recipient === $address) {
+                    return;
+                }
+            }
+        } else {
+            throw new \Exception(sprintf('Could not parse mail recipient: %s', print_r($address, true)));
         }
         throw new \Exception(sprintf('Did not find the recipient "%s" in the mail', $address));
     }
