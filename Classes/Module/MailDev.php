@@ -33,8 +33,12 @@ class MailDev extends Module
      */
     public function __construct(ModuleContainer $moduleContainer, array $config = null)
     {
-        parent::__construct($moduleContainer, $config);
-        $this->mailDevClient = new MailDevClient($config['base_uri'] ?? null);
+        parent::__construct($moduleContainer, $config); $this->mailDevClient = new MailDevClient(
+            $config['base_uri'] ?? 'http://127.0.0.1:8025',
+            $config['username'] ?? '',
+            $config['password'] ?? '',
+            $config['authenticationType'] ?? 'basic',
+        );
     }
 
     /**
@@ -48,7 +52,7 @@ class MailDev extends Module
 
     public function clearInbox(): void
     {
-        $this->mailDevClient->deleteAllMessages();
+        $this->mailDevClient->deleteAllMails();
     }
 
     /**
