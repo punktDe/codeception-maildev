@@ -22,21 +22,30 @@ class MailDevClient
     /**
      * MailDevClient constructor.
      * @param string $baseUri
+     * @param string $username
+     * @param string $password
+     * @param string $authenticationType
      */
-    public function __construct(string $baseUri = 'http://127.0.0.1:8025')
+    public function __construct(string $baseUri, string $username = '', string $password = '', string $authenticationType = 'basic')
     {
-        $this->client = new Client([
-            'base_uri' => $baseUri,
-            'cookies' => true,
-            'headers' => [
-                'User-Agent' => 'FancyPunktDeGuzzleTestingAgent'
-            ],
-        ]);
+        $configuration = [
+                'base_uri' => $baseUri,
+                'cookies' => true,
+                'headers' => [
+                    'User-Agent' => 'FancyPunktDeGuzzleTestingAgent'
+                ],
+            ];
+
+        if($username !== '' && $password !== '') {
+            $configuration = array_merge($configuration, ['auth' => [$username, $password, $authenticationType]]);
+        }
+
+        $this->client = new Client($configuration);
     }
 
-    public function deleteAllMessages(): void
+    public function deleteAllMails(): void
     {
-        $this->client->delete('/api/v1/messages');
+        $this->client->delete('/email/all');
     }
 
     /**
@@ -45,8 +54,9 @@ class MailDevClient
      */
     public function countAll(): int
     {
-        $data = $this->getDataFromMailDev('api/v2/messages?start=0&limit=1');
-        return (int) $data['total'];
+        $data = $this->getDataFromMailDev('/email');
+
+        return count($data);
     }
 
     /**
@@ -55,13 +65,9 @@ class MailDevClient
      */
     public function findOneByIndex(int $index): Mail
     {
-        $apiCall = sprintf('api/v2/messages', $index);
-        $result = $this->client->get($apiCall)->getBody();
+        $data = $this->getDataFromMailDev('/email');
 
-        if (($data = json_decode($result, true)) !== false) {
-            $currentMailData = $data['items'][$index];
-            return $this->buildMailObjectFromJson($currentMailData);
-        }
+        return new Mail($data[$index]);
     }
 
     /**
