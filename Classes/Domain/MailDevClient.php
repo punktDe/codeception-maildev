@@ -19,40 +19,49 @@ class MailDevClient
      */
     protected $client;
 
-    public function __construct(string $baseUri, string $username = '', string $password = '', string $authenticationType = 'basic')
+    /**
+     * MailDevClient constructor.
+     * @param string $baseUri
+     */
+    public function __construct(string $baseUri = 'http://127.0.0.1:8025')
     {
-        $configuration = [
+        $this->client = new Client([
             'base_uri' => $baseUri,
             'cookies' => true,
             'headers' => [
                 'User-Agent' => 'FancyPunktDeGuzzleTestingAgent'
             ],
-        ];
-
-        if($username !== '' && $password !== '') {
-            $configuration = array_merge($configuration, ['auth' => [$username, $password, $authenticationType]]);
-        }
-
-        $this->client = new Client($configuration);
+        ]);
     }
 
-    public function deleteAllMails(): void
+    public function deleteAllMessages(): void
     {
-        $this->client->delete('/email/all');
+        $this->client->delete('/api/v1/messages');
     }
 
+    /**
+     * @return int
+     * @throws \Exception
+     */
     public function countAll(): int
     {
-        $data = $this->getDataFromMailDev('/email');
-
-        return count($data);
+        $data = $this->getDataFromMailDev('api/v2/messages?start=0&limit=1');
+        return (int) $data['total'];
     }
 
+    /**
+     * @param $index
+     * @return Mail
+     */
     public function findOneByIndex(int $index): Mail
     {
-        $data = $this->getDataFromMailDev('/email');
+        $apiCall = sprintf('api/v2/messages', $index);
+        $result = $this->client->get($apiCall)->getBody();
 
-        return new Mail($data[$index]);
+        if (($data = json_decode($result, true)) !== false) {
+            $currentMailData = $data['items'][$index];
+            return $this->buildMailObjectFromJson($currentMailData);
+        }
     }
 
     /**
@@ -67,10 +76,19 @@ class MailDevClient
         $data = json_decode($result, true);
 
         if ($data === false) {
-            throw new \Exception('The mailhog result could not be parsed to json', 1467038556);
+            throw new \Exception('The maildev result could not be parsed to json', 1467038556);
         }
 
         return $data;
+    }
+
+    /**
+     * @param array $data
+     * @return Mail
+     */
+    protected function buildMailObjectFromJson(array $data): Mail
+    {
+        return new Mail($data);
     }
 
 }

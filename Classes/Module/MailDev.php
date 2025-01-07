@@ -26,15 +26,15 @@ class MailDev extends Module
      */
     protected $currentMail = null;
 
-    public function __construct(ModuleContainer $moduleContainer, array $config = [])
+    /**
+     * Maildev constructor.
+     * @param ModuleContainer $moduleContainer
+     * @param mixed[]|null $config
+     */
+    public function __construct(ModuleContainer $moduleContainer, array $config = null)
     {
         parent::__construct($moduleContainer, $config);
-        $this->mailDevClient = new MailDevClient(
-            $config['base_uri'] ?? 'http://127.0.0.1:8025',
-            $config['username'] ?? '',
-            $config['password'] ?? '',
-            $config['authenticationType'] ?? 'basic',
-        );
+        $this->mailDevClient = new MailDevClient($config['base_uri'] ?? null);
     }
 
     /**
@@ -48,7 +48,7 @@ class MailDev extends Module
 
     public function clearInbox(): void
     {
-        $this->mailDevClient->deleteAllMails();
+        $this->mailDevClient->deleteAllMessages();
     }
 
     /**
@@ -59,7 +59,11 @@ class MailDev extends Module
         $mailIndex = $mailNumber - 1;
         $this->currentMail = $this->mailDevClient->findOneByIndex($mailIndex);
 
-        $this->assertInstanceOf(Mail::class, $this->currentMail, 'The mail with number ' . $mailNumber . ' does not exist.');
+        $this->assertInstanceOf(
+            Mail::class,
+            $this->currentMail,
+            'The mail with number ' . $mailNumber . ' does not exist.'
+        );
     }
 
     /**
@@ -70,7 +74,8 @@ class MailDev extends Module
     {
         $mail = $this->parseMailBody($this->currentMail->getBody());
         if (preg_match('/(http[^\s|^"]*' . preg_quote($link, '/') . '[^\s|^"]*)/', $mail, $links)) {
-            $webdriver = $this->getModule('WebDriver'); /** @var Module\WebDriver $webdriver */
+            $webdriver = $this->getModule('WebDriver');
+            /** @var Module\WebDriver $webdriver */
             $targetLink = $links[0];
             $targetLink = urldecode($targetLink);
             $targetLink = html_entity_decode($targetLink);
@@ -82,15 +87,16 @@ class MailDev extends Module
 
     /**
      * @param string $text
+     * @param bool $quotedPrintableDecodeFlag
      * @throws \Exception
      */
-    public function seeTextInMail(string $text): void
+    public function seeTextInMail(string $text, bool $quotedPrintableDecodeFlag = false): void
     {
         $mail = $this->parseMailBody($this->currentMail->getBody());
-        if (stristr($mail, $text)) {
+        if (stristr(self::quotedPrintableDecodeRespectingEquals($mail, $quotedPrintableDecodeFlag), $text)) {
             return;
         }
-        throw new \Exception(sprintf('Did not find the text "%s" in the mail', $text));
+        throw new \Exception(sprintf('Did not find the text "%s" in the mail %s', $text));
     }
 
     /**
@@ -109,6 +115,41 @@ class MailDev extends Module
     }
 
     /**
+     * @throws \Exception
+     */
+    public function checkIfSpam(): void
+    {
+        $subjectArray = $this->currentMail->getSubject();
+
+        foreach ($subjectArray as $subject) {
+            if (strpos($subject, "[SPAM]") === 0) {
+                return;
+            }
+        }
+
+        throw new \Exception(sprintf('Could not find [SPAM] at the beginning of subject "%s"', $subject));
+    }
+
+
+    /**
+     * @param string $text
+     * @param bool $mimeDecodeFlag
+     * @param string $charset
+     * @throws \Exception
+     */
+    public function seeSubjectOfMail(string $text, bool $mimeDecodeFlag = false, string $charset = 'UTF-8'): void
+    {
+        $subjectArray = $this->currentMail->getSubject();
+
+        foreach ($subjectArray as $subject) {
+            if (stristr(self::mimeDecodeSubject($subject, $charset), $text)) {
+                return;
+            }
+        }
+        throw new \Exception(sprintf('Did not find the subject "%s" in the mail', $text));
+    }
+
+    /**
      * @param string $mailBody
      * @return string
      */
@@ -119,5 +160,32 @@ class MailDev extends Module
             $unescapedMail = strip_tags($unescapedMail, '<a><img>');
         }
         return $unescapedMail;
+    }
+
+    /**
+     * @param string $string
+     * @param bool $quotedPrintableDecodeFlag
+     * @return string
+     */
+    static protected function quotedPrintableDecodeRespectingEquals(
+        string $string,
+        bool $quotedPrintableDecodeFlag = false
+    ): string {
+        if ($quotedPrintableDecodeFlag) {
+            return quoted_printable_decode($string);
+        }
+
+        return quoted_printable_decode(str_replace('=', '=3D', $string));
+    }
+
+
+    /**
+     * @param string $string
+     * @param string $charset
+     * @return string
+     */
+    static protected function mimeDecodeSubject(string $string, string $charset): string
+    {
+        return iconv_mime_decode($string, ICONV_MIME_DECODE_CONTINUE_ON_ERROR, $charset);
     }
 }
