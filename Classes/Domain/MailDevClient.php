@@ -29,12 +29,12 @@ class MailDevClient
     public function __construct(string $baseUri, string $username = '', string $password = '', string $authenticationType = 'basic')
     {
         $configuration = [
-                'base_uri' => $baseUri,
-                'cookies' => true,
-                'headers' => [
-                    'User-Agent' => 'FancyPunktDeGuzzleTestingAgent'
-                ],
-            ];
+            'base_uri' => $baseUri,
+            'cookies' => true,
+            'headers' => [
+                'User-Agent' => 'FancyPunktDeGuzzleTestingAgent'
+            ],
+        ];
 
         if($username !== '' && $password !== '') {
             $configuration = array_merge($configuration, ['auth' => [$username, $password, $authenticationType]]);
