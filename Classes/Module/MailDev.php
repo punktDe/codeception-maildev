@@ -92,16 +92,16 @@ class MailDev extends Module
 
     /**
      * @param string $text
-     * @param bool $quotedPrintableDecodeFlag
      * @throws \Exception
      */
-    public function seeTextInMail(string $text, bool $quotedPrintableDecodeFlag = false): void
+    public function seeTextInMail(string $text): void
     {
         $mail = $this->parseMailBody($this->currentMail->getBody());
-        if (stristr(self::quotedPrintableDecodeRespectingEquals($mail, $quotedPrintableDecodeFlag), $text)) {
+        if (stristr(html_entity_decode($mail), $text)) {
             return;
         }
-        throw new \Exception(sprintf('Did not find the text "%s" in the mail %s', $text));
+
+        throw new \Exception(sprintf('Did not find the text "%s" in the mail', $text));
     }
 
     /**
@@ -124,12 +124,10 @@ class MailDev extends Module
      */
     public function checkIfSpam(): void
     {
-        $subjectArray = $this->currentMail->getSubject();
+        $subject = $this->currentMail->getSubject();
 
-        foreach ($subjectArray as $subject) {
-            if (strpos($subject, "[SPAM]") === 0) {
-                return;
-            }
+        if (strpos($subject, "[SPAM]") === 0) {
+            return;
         }
 
         throw new \Exception(sprintf('Could not find [SPAM] at the beginning of subject "%s"', $subject));
@@ -138,20 +136,17 @@ class MailDev extends Module
 
     /**
      * @param string $text
-     * @param bool $mimeDecodeFlag
-     * @param string $charset
      * @throws \Exception
      */
-    public function seeSubjectOfMail(string $text, bool $mimeDecodeFlag = false, string $charset = 'UTF-8'): void
+    public function seeSubjectOfMail(string $text): void
     {
-        $subjectArray = $this->currentMail->getSubject();
+        $subject = $this->currentMail->getSubject();
 
-        foreach ($subjectArray as $subject) {
-            if (stristr(self::mimeDecodeSubject($subject, $charset), $text)) {
-                return;
-            }
+        if (stristr($subject, $text)) {
+            return;
         }
-        throw new \Exception(sprintf('Did not find the subject "%s" in the mail', $text));
+
+        throw new \Exception(sprintf('Did not find the subject "%s" in the mail, subject was "%s"', $text, $subject));
     }
 
     /**
@@ -165,32 +160,5 @@ class MailDev extends Module
             $unescapedMail = strip_tags($unescapedMail, '<a><img>');
         }
         return $unescapedMail;
-    }
-
-    /**
-     * @param string $string
-     * @param bool $quotedPrintableDecodeFlag
-     * @return string
-     */
-    static protected function quotedPrintableDecodeRespectingEquals(
-        string $string,
-        bool $quotedPrintableDecodeFlag = false
-    ): string {
-        if ($quotedPrintableDecodeFlag) {
-            return quoted_printable_decode($string);
-        }
-
-        return quoted_printable_decode(str_replace('=', '=3D', $string));
-    }
-
-
-    /**
-     * @param string $string
-     * @param string $charset
-     * @return string
-     */
-    static protected function mimeDecodeSubject(string $string, string $charset): string
-    {
-        return iconv_mime_decode($string, ICONV_MIME_DECODE_CONTINUE_ON_ERROR, $charset);
     }
 }

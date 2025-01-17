@@ -42,11 +42,9 @@ class Mail
     {
         $this->mailData = $mailData;
 
-        $this->body = Arrays::getValueByPath($this->maiLData, 'Content.Body');
-        $this->recipients = Arrays::getValueByPath($this->maiLData, 'Content.Headers.To');
-        $this->subject = Arrays::getValueByPath($this->maiLData, 'Content.Headers.Subject');
-
-
+        $this->body = Arrays::getValueByPath($this->mailData, 'html');
+        $this->recipients = Arrays::getValueByPath($this->mailData, 'headers.to');
+        $this->subject = Arrays::getValueByPath($this->mailData, 'headers.subject');
     }
 
     /**

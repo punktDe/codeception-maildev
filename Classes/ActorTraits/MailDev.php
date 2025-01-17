@@ -56,13 +56,11 @@ trait MailDev
 
     /**
      * @Then I should see :text in the email
-     * @Then I should see :text in the email with decodeQP :decodeQuotedPrintableFlag
      * @param string $text
-     * @param bool $decodeQuotedPrintableFlag
      */
-    public function iSeeInMail(string $text, string|bool $decodeQuotedPrintableFlag = false): void
+    public function iSeeInMail(string $text): void
     {
-        $this->seeTextInMail($text, $decodeQuotedPrintableFlag);
+        $this->seeTextInMail($text);
     }
 
     /**
@@ -76,14 +74,11 @@ trait MailDev
 
     /**
      * @Then I should see :subject in the email subject
-     * @Then I should see :subject in the email subject with decodeQP :mimeDecodeFlag
-     * @Then I should see :subject in the email subject with decodeQP :mimeDecodeFlag and charset :charset
      * @param string $subject
-     * @param bool $mimeDecodeFlag
      */
-    public function iSeeSubjectOfMail(string $subject, string|bool $mimeDecodeFlag = false, string $charset='UTF-8'): void
+    public function iSeeSubjectOfMail(string $subject): void
     {
-        $this->seeSubjectOfMail($subject, $mimeDecodeFlag, $charset);
+        $this->seeSubjectOfMail($subject);
     }
 
     /**
