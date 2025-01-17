@@ -26,9 +26,14 @@ class MailDev extends Module
      */
     protected $currentMail = null;
 
-    public function __construct(ModuleContainer $moduleContainer, array $config = [])
+    /**
+     * Maildev constructor.
+     * @param ModuleContainer $moduleContainer
+     * @param mixed[]|null $config
+     */
+    public function __construct(ModuleContainer $moduleContainer, array $config = null)
     {
-        parent::__construct($moduleContainer, $config);
+        parent::__construct($moduleContainer, $config); 
         $this->mailDevClient = new MailDevClient(
             $config['base_uri'] ?? 'http://127.0.0.1:8025',
             $config['username'] ?? '',
@@ -59,7 +64,11 @@ class MailDev extends Module
         $mailIndex = $mailNumber - 1;
         $this->currentMail = $this->mailDevClient->findOneByIndex($mailIndex);
 
-        $this->assertInstanceOf(Mail::class, $this->currentMail, 'The mail with number ' . $mailNumber . ' does not exist.');
+        $this->assertInstanceOf(
+            Mail::class,
+            $this->currentMail,
+            'The mail with number ' . $mailNumber . ' does not exist.'
+        );
     }
 
     /**
@@ -70,7 +79,8 @@ class MailDev extends Module
     {
         $mail = $this->parseMailBody($this->currentMail->getBody());
         if (preg_match('/(http[^\s|^"]*' . preg_quote($link, '/') . '[^\s|^"]*)/', $mail, $links)) {
-            $webdriver = $this->getModule('WebDriver'); /** @var Module\WebDriver $webdriver */
+            $webdriver = $this->getModule('WebDriver');
+            /** @var Module\WebDriver $webdriver */
             $targetLink = $links[0];
             $targetLink = urldecode($targetLink);
             $targetLink = html_entity_decode($targetLink);
@@ -87,9 +97,10 @@ class MailDev extends Module
     public function seeTextInMail(string $text): void
     {
         $mail = $this->parseMailBody($this->currentMail->getBody());
-        if (stristr($mail, $text)) {
+        if (stristr(html_entity_decode($mail), $text)) {
             return;
         }
+
         throw new \Exception(sprintf('Did not find the text "%s" in the mail', $text));
     }
 
@@ -106,6 +117,36 @@ class MailDev extends Module
             }
         }
         throw new \Exception(sprintf('Did not find the recipient "%s" in the mail', $address));
+    }
+
+    /**
+     * @throws \Exception
+     */
+    public function checkIfSpam(): void
+    {
+        $subject = $this->currentMail->getSubject();
+
+        if (strpos($subject, "[SPAM]") === 0) {
+            return;
+        }
+
+        throw new \Exception(sprintf('Could not find [SPAM] at the beginning of subject "%s"', $subject));
+    }
+
+
+    /**
+     * @param string $text
+     * @throws \Exception
+     */
+    public function seeSubjectOfMail(string $text): void
+    {
+        $subject = $this->currentMail->getSubject();
+
+        if (stristr($subject, $text)) {
+            return;
+        }
+
+        throw new \Exception(sprintf('Did not find the subject "%s" in the mail, subject was "%s"', $text, $subject));
     }
 
     /**

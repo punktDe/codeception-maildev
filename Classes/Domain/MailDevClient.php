@@ -19,6 +19,13 @@ class MailDevClient
      */
     protected $client;
 
+    /**
+     * MailDevClient constructor.
+     * @param string $baseUri
+     * @param string $username
+     * @param string $password
+     * @param string $authenticationType
+     */
     public function __construct(string $baseUri, string $username = '', string $password = '', string $authenticationType = 'basic')
     {
         $configuration = [
@@ -41,6 +48,10 @@ class MailDevClient
         $this->client->delete('/email/all');
     }
 
+    /**
+     * @return int
+     * @throws \Exception
+     */
     public function countAll(): int
     {
         $data = $this->getDataFromMailDev('/email');
@@ -48,6 +59,10 @@ class MailDevClient
         return count($data);
     }
 
+    /**
+     * @param $index
+     * @return Mail
+     */
     public function findOneByIndex(int $index): Mail
     {
         $data = $this->getDataFromMailDev('/email');
@@ -67,10 +82,19 @@ class MailDevClient
         $data = json_decode($result, true);
 
         if ($data === false) {
-            throw new \Exception('The mailhog result could not be parsed to json', 1467038556);
+            throw new \Exception('The maildev result could not be parsed to json', 1467038556);
         }
 
         return $data;
+    }
+
+    /**
+     * @param array $data
+     * @return Mail
+     */
+    protected function buildMailObjectFromJson(array $data): Mail
+    {
+        return new Mail($data);
     }
 
 }

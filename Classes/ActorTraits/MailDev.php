@@ -71,4 +71,21 @@ trait MailDev
     {
         $this->checkRecipientAddress($address);
     }
+
+    /**
+     * @Then I should see :subject in the email subject
+     * @param string $subject
+     */
+    public function iSeeSubjectOfMail(string $subject): void
+    {
+        $this->seeSubjectOfMail($subject);
+    }
+
+    /**
+     * @Then This mail is spam
+     */
+    public function ifSpamMail(): void
+    {
+        $this->checkIfSpam();
+    }
 }
