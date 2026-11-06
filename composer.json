@@ -1,7 +1,7 @@
 {
     "description": "Provides a module and gherkin steps to access a maildev api for codeception testing",
     "name": "punktde/codeception-maildev",
-    "license": "GPL-3.0-or-later",
+    "license": "MIT",
     "require": {
         "codeception/codeception": "^4.0 || ^5.0",
         "codeception/module-webdriver": "^3.0",
